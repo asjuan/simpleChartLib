@@ -25,17 +25,18 @@ var simpleBarChart = (function () {
             data = [];
             valueId = 0;
             for (key in element) {
-                if (key !== "label") {
+                if (key !== "label" && key !== "_id") {
                     valueId += 1;
                     data.push({ category: t("Category{pos}", { pos: valueId }), value: element[key] });
                 }
             }
-            element.data = data;
+            element._data = data;
             list.push(element);
         }
         return list;
     }
     var HEIGHT = 300;
+    var COLWIDTH = 50;
     var maxValue = 0;
     var dataSeries = [];
     var doesArrayHasLabel = function (series) {
@@ -49,7 +50,7 @@ var simpleBarChart = (function () {
             return curr.value + next.value;
         }
         dataSeries.forEach(function (element) {
-            var sum = element.data.reduce(acum);
+            var sum = element._data.reduce(acum);
             if (sum > maxValue) {
                 maxValue = sum;
             }
@@ -58,20 +59,21 @@ var simpleBarChart = (function () {
     var parseCols = function () {
 
         function scale(value) {
-            return value * HEIGHT / maxValue;
+            return Math.ceil(value * HEIGHT / maxValue);
         }
         function parseStack(object) {
             var html = "";
             var index;
             var item;
-            for (index = 0; index < object.data.length; index++) {
-                item = object.data[index];
-                html += t("<div title='{label}' class='{category}' style='height:{calculatedHeight}' rel='tooltip'></div>", { label: object.label, category: item.category, calculatedHeight: scale(object.value) });
+            for (index = 0; index < object._data.length; index++) {
+                item = object._data[index];
+                html += t("<div title='{label}' class='{category}' style='height:{calculatedHeight}px; width:{defaultWidth}px;' rel='tooltip'></div>", { label: object.label, category: item.category, calculatedHeight: scale(item.value), defaultWidth: COLWIDTH });
             }
+            return html;
         }
         var innerHtml = "";
         var iterateCols = function (element) {
-            innerHtml += t("<td>{stack}</td>", { stack: parseStack(element) });
+            innerHtml += t("<td class='simplechartcol'>{stack}</td>", { stack: parseStack(element) });
         };
         dataSeries.forEach(iterateCols);
         return innerHtml;
