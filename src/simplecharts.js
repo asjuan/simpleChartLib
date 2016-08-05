@@ -39,6 +39,7 @@ var simpleBarChart = (function () {
     var COLWIDTH = 50;
     var maxValue = 0;
     var dataSeries = [];
+    var isLabelVisible = false;
     var doesArrayHasLabel = function (series) {
         function isvalidFormat(element) {
             return element.hasOwnProperty("label");
@@ -47,10 +48,12 @@ var simpleBarChart = (function () {
     }
     var setMaxValue = function () {
         function acum(curr, next) {
-            return curr.value + next.value;
+            return {
+                value: curr.value + next.value
+            };
         }
         dataSeries.forEach(function (element) {
-            var sum = element._data.reduce(acum);
+            var sum = element._data.reduce(acum).value;
             if (sum > maxValue) {
                 maxValue = sum;
             }
@@ -78,12 +81,25 @@ var simpleBarChart = (function () {
         dataSeries.forEach(iterateCols);
         return innerHtml;
     }
+    var parseLabels = function () {
+        var innerHtml = "";
+        var iterateCols = function (element) {
+            innerHtml += t("<td class='simplechartcol'><div class='simplechartlabels'>{label}</div></td>", element);
+        };
+        dataSeries.forEach(iterateCols);
+        return innerHtml;
+    };
     var parseData = function () {
-        var innerHtml = t("<table><tr>{cols}</tr></table>", { cols: parseCols() });
+        var innerHtml = "";
+        if (isLabelVisible) {
+            innerHtml = t("<table><tr>{cols}</tr><tr>{labels}</tr></table>", { cols: parseCols(), labels: parseLabels() });
+        } else {
+            innerHtml = t("<table><tr>{cols}</tr></table>", { cols: parseCols() });
+        }
         return innerHtml;
     }
     var myAPI = {
-        setData: function (series) {
+        setData: function (series, options) {
             if (!Array.isArray(series)) {
                 throw new CustomException("Invalid data series. An array is expected");
             }
@@ -92,9 +108,21 @@ var simpleBarChart = (function () {
             }
             dataSeries = indexIt(series);
             setMaxValue();
+            if (options) {
+                if (options.showLabel) {
+                    isLabelVisible = true;
+                }
+                if (options.colwidth) {
+                    COLWIDTH = options.colwidth;
+                }
+            }
             return myAPI;
         },
-        getParsed: parseData
+        getParsedHtml: parseData,
+        attachElement: function (elementId) {
+            var domNode = document.getElementById(elementId);
+            domNode.innerHTML = parseData();
+        }
     };
 
     return myAPI;

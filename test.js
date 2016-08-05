@@ -1,5 +1,3 @@
 (function () {
-    var chart = document.getElementById("chart");
-    var bar = simpleBarChart.setData([{ label: 'Item 1', x1: 1000, x2: 200 }, { label: 'Item 2', x1: 840, x2: 400 }]);
-    chart.innerHTML = bar.getParsed();
+    simpleBarChart.setData([{ label: 'Item 1', x1: 1000, x2: 200, x3: 50}, { label: 'Item 2', x1: 840, x2: 400, x3: 100}], {showLabel: true, colwidth: 70}).attachElement("chart");
 }());

@@ -10,3 +10,7 @@
 .simplechartcol {
     vertical-align: bottom
 }
+.simplechartlabels {
+    color: blue;
+    text-align: center;
+}
