@@ -98,32 +98,40 @@ var simpleBarChart = (function () {
         }
         return innerHtml;
     }
-    var myAPI = {
-        setData: function (series, options) {
-            if (!Array.isArray(series)) {
-                throw new CustomException("Invalid data series. An array is expected");
-            }
-            if (series.length > 0 && !doesArrayHasLabel(series)) {
-                throw new CustomException("An object in this series does not contain mandatory label property");
-            }
-            dataSeries = indexIt(series);
-            setMaxValue();
-            if (options) {
-                if (options.showLabel) {
-                    isLabelVisible = true;
-                }
-                if (options.colwidth) {
-                    COLWIDTH = options.colwidth;
-                }
-            }
-            return myAPI;
-        },
-        getParsedHtml: parseData,
-        attachElement: function (elementId) {
-            var domNode = document.getElementById(elementId);
-            domNode.innerHTML = parseData();
+    var myAPI;
+    return function (elementId) {
+        var domNode;
+        if (elementId[0] == "#") {
+            domNode = document.getElementById(elementId.replace("#",""));
         }
-    };
+        else {
+            throw "This version only supports ids.";
+        }
 
-    return myAPI;
+        myAPI = {
+            setData: function (series, options) {
+                if (!Array.isArray(series)) {
+                    throw new CustomException("Invalid data series. An array is expected");
+                }
+                if (series.length > 0 && !doesArrayHasLabel(series)) {
+                    throw new CustomException("An object in this series does not contain mandatory label property");
+                }
+                dataSeries = indexIt(series);
+                setMaxValue();
+                if (options) {
+                    if (options.showLabel) {
+                        isLabelVisible = true;
+                    }
+                    if (options.colwidth) {
+                        COLWIDTH = options.colwidth;
+                    }
+                }
+                return myAPI;
+            },
+            render: function () {
+                domNode.innerHTML = parseData();
+            }
+        }
+        return myAPI;
+    };
 } ());
