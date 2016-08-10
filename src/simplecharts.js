@@ -18,6 +18,7 @@ var simpleBarChart = (function () {
         var valueId = 0;
         var object = array[0];
         var data;
+        var formatted;
         for (index = 0; index < array.length; index++) {
 
             element = array[index];
@@ -25,9 +26,13 @@ var simpleBarChart = (function () {
             data = [];
             valueId = 0;
             for (key in element) {
-                if (key !== "label" && key !== "_id") {
+                if (key !== "label" && key !== "_id" && key.indexOf("display") == -1) {
                     valueId += 1;
-                    data.push({ category: t("Category{pos}", { pos: valueId }), value: element[key] });
+                    formatted = "";
+                    if (element.hasOwnProperty("display" + key)) {
+                        formatted = element["display" + key];
+                    }
+                    data.push({ category: t("Category{pos}", { pos: valueId }), value: element[key], formattedValue: formatted });
                 }
             }
             element._data = data;
@@ -75,9 +80,11 @@ var simpleBarChart = (function () {
             var html = "";
             var index;
             var item;
+            var options;
             for (index = 0; index < object._data.length; index++) {
                 item = object._data[index];
-                html += t("<div title='{label}' class='{category}' style='height:{calculatedHeight}px; width:{defaultWidth}px;' rel='tooltip'></div>", { label: object.label, category: item.category, calculatedHeight: scale(item.value), defaultWidth: COLWIDTH });
+                options = { altLabel: item.value, category: item.category, calculatedHeight: scale(item.value), defaultWidth: COLWIDTH, displayValue: item.formattedValue };
+                html += t("<div title='{altLabel}' class='{category}' style='height:{calculatedHeight}px; width:{defaultWidth}px;' rel='tooltip'>{displayValue}</div>", options);
             }
             return html;
         }
@@ -114,7 +121,7 @@ var simpleBarChart = (function () {
         if (isLabelVisible) {
             labelHtml = t("<tr>{labels}</tr>", { labels: parseLabels() });
         }
-        innerHtml = t("<table><tr>{cols}</tr>{photosHtml}{labelHtml}</table>", { cols: parseCols(), photosHtml: photoHtml, labelHtml: labelHtml});
+        innerHtml = t("<table><tr>{cols}</tr>{photosHtml}{labelHtml}</table>", { cols: parseCols(), photosHtml: photoHtml, labelHtml: labelHtml });
         return innerHtml;
     };
     var myAPI;
