@@ -40,12 +40,19 @@ var simpleBarChart = (function () {
     var maxValue = 0;
     var dataSeries = [];
     var isLabelVisible = false;
+    var isPhotoVisible = false;
     var doesArrayHasLabel = function (series) {
         function isvalidFormat(element) {
             return element.hasOwnProperty("label");
         }
         return series.every(isvalidFormat);
-    }
+    };
+    var doesArrayHasPhotos = function (series) {
+        function isvalidFormat(element) {
+            return element.hasOwnProperty("photoPath");
+        }
+        return series.every(isvalidFormat);
+    };
     var setMaxValue = function () {
         function acum(curr, next) {
             return {
@@ -58,7 +65,7 @@ var simpleBarChart = (function () {
                 maxValue = sum;
             }
         }, this);
-    }
+    };
     var parseCols = function () {
 
         function scale(value) {
@@ -80,7 +87,15 @@ var simpleBarChart = (function () {
         };
         dataSeries.forEach(iterateCols);
         return innerHtml;
-    }
+    };
+    var parsePhotos = function () {
+        var innerHtml = "";
+        var iterateCols = function (element) {
+            innerHtml += t("<td class='simplechartcol'><div class='simplechartlabels'><img src='{photoPath}' alt='{label}' /></div></td>", element);
+        };
+        dataSeries.forEach(iterateCols);
+        return innerHtml;
+    };
     var parseLabels = function () {
         var innerHtml = "";
         var iterateCols = function (element) {
@@ -91,21 +106,25 @@ var simpleBarChart = (function () {
     };
     var parseData = function () {
         var innerHtml = "";
-        if (isLabelVisible) {
-            innerHtml = t("<table><tr>{cols}</tr><tr>{labels}</tr></table>", { cols: parseCols(), labels: parseLabels() });
-        } else {
-            innerHtml = t("<table><tr>{cols}</tr></table>", { cols: parseCols() });
+        var photoHtml = "";
+        var labelHtml = "";
+        if (isPhotoVisible) {
+            photoHtml = t("<tr>{photos}</tr>", { photos: parsePhotos() });
         }
+        if (isLabelVisible) {
+            labelHtml = t("<tr>{labels}</tr>", { labels: parseLabels() });
+        }
+        innerHtml = t("<table><tr>{cols}</tr>{photosHtml}{labelHtml}</table>", { cols: parseCols(), photosHtml: photoHtml, labelHtml: labelHtml});
         return innerHtml;
-    }
+    };
     var myAPI;
     return function (elementId) {
         var domNode;
         if (elementId[0] == "#") {
-            domNode = document.getElementById(elementId.replace("#",""));
+            domNode = document.getElementById(elementId.replace("#", ""));
         }
         else {
-            throw "This version only supports ids.";
+            throw new CustomException("This version only supports ids");
         }
 
         myAPI = {
@@ -116,6 +135,7 @@ var simpleBarChart = (function () {
                 if (series.length > 0 && !doesArrayHasLabel(series)) {
                     throw new CustomException("An object in this series does not contain mandatory label property");
                 }
+                isPhotoVisible = doesArrayHasPhotos(series);
                 dataSeries = indexIt(series);
                 setMaxValue();
                 if (options) {
