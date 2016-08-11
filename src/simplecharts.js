@@ -2,37 +2,40 @@ var simpleBarChart = (function () {
 
     "use strict";
     function CustomException(text) {
-        this.message = text
+        this.message = text;
     }
     function t(s, d) {
-        for (var p in d)
-            s = s.replace(new RegExp('{' + p + '}', 'g'), d[p]);
+        var p;
+        for (p in d) {
+            s = s.replace(new RegExp("{" + p + "}", "g"), d[p]);
+        }
         return s;
     }
     function indexIt(array) {
         var list = [];
-        var values = [];
         var index;
         var element;
         var key;
         var valueId = 0;
-        var object = array[0];
         var data;
         var formatted;
-        for (index = 0; index < array.length; index++) {
+        var isValidProperty = function (propertyName) {
+            return propertyName !== "label" && propertyName !== "_id" && propertyName.indexOf("display") === -1 && propertyName !== "imagePath";
+        };
+        for (index = 0; index < array.length; index += 1) {
 
             element = array[index];
             element._id = index + 1;
             data = [];
             valueId = 0;
             for (key in element) {
-                if (key !== "label" && key !== "_id" && key.indexOf("display") == -1) {
+                if (isValidProperty(key)) {
                     valueId += 1;
                     formatted = "";
                     if (element.hasOwnProperty("display" + key)) {
                         formatted = element["display" + key];
                     }
-                    data.push({ category: t("Category{pos}", { pos: valueId }), value: element[key], formattedValue: formatted });
+                    data.push({category: t("Category{pos}", {pos: valueId}), value: element[key], formattedValue: formatted});
                 }
             }
             element._data = data;
@@ -54,7 +57,7 @@ var simpleBarChart = (function () {
     };
     var doesArrayHasPhotos = function (series) {
         function isvalidFormat(element) {
-            return element.hasOwnProperty("photoPath");
+            return element.hasOwnProperty("imagePath");
         }
         return series.every(isvalidFormat);
     };
@@ -81,24 +84,24 @@ var simpleBarChart = (function () {
             var index;
             var item;
             var options;
-            for (index = 0; index < object._data.length; index++) {
+            for (index = 0; index < object._data.length; index += 1) {
                 item = object._data[index];
-                options = { altLabel: item.value, category: item.category, calculatedHeight: scale(item.value), defaultWidth: COLWIDTH, displayValue: item.formattedValue };
+                options = {altLabel: item.value, category: item.category, calculatedHeight: scale(item.value), defaultWidth: COLWIDTH, displayValue: item.formattedValue};
                 html += t("<div title='{altLabel}' class='{category}' style='height:{calculatedHeight}px; width:{defaultWidth}px;' rel='tooltip'>{displayValue}</div>", options);
             }
             return html;
         }
         var innerHtml = "";
         var iterateCols = function (element) {
-            innerHtml += t("<td class='simplechartcol'>{stack}</td>", { stack: parseStack(element) });
+            innerHtml += t("<td class='simplechartcol'>{stack}</td>", {stack: parseStack(element)});
         };
         dataSeries.forEach(iterateCols);
         return innerHtml;
     };
-    var parsePhotos = function () {
+    var parseImages = function () {
         var innerHtml = "";
         var iterateCols = function (element) {
-            innerHtml += t("<td class='simplechartcol'><div class='simplechartlabels'><img src='{photoPath}' alt='{label}' /></div></td>", element);
+            innerHtml += t("<td class='simplechartcol'><div class='simplechartlabels'><img src='{imagePath}' alt='{label}' /></div></td>", element);
         };
         dataSeries.forEach(iterateCols);
         return innerHtml;
@@ -116,21 +119,20 @@ var simpleBarChart = (function () {
         var photoHtml = "";
         var labelHtml = "";
         if (isPhotoVisible) {
-            photoHtml = t("<tr>{photos}</tr>", { photos: parsePhotos() });
+            photoHtml = t("<tr>{photos}</tr>", {photos: parseImages()});
         }
         if (isLabelVisible) {
-            labelHtml = t("<tr>{labels}</tr>", { labels: parseLabels() });
+            labelHtml = t("<tr>{labels}</tr>", {labels: parseLabels()});
         }
-        innerHtml = t("<table><tr>{cols}</tr>{photosHtml}{labelHtml}</table>", { cols: parseCols(), photosHtml: photoHtml, labelHtml: labelHtml });
+        innerHtml = t("<table><tr>{cols}</tr>{photosHtml}{labelHtml}</table>", {cols: parseCols(), photosHtml: photoHtml, labelHtml: labelHtml});
         return innerHtml;
     };
     var myAPI;
     return function (elementId) {
         var domNode;
-        if (elementId[0] == "#") {
+        if (elementId[0] === "#") {
             domNode = document.getElementById(elementId.replace("#", ""));
-        }
-        else {
+        } else {
             throw new CustomException("This version only supports ids");
         }
 
@@ -158,7 +160,7 @@ var simpleBarChart = (function () {
             render: function () {
                 domNode.innerHTML = parseData();
             }
-        }
+        };
         return myAPI;
     };
-} ());
+}());
